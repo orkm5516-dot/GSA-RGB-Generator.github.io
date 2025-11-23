@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GSA RGB Generator — iOS Style</title>
+
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        font-family: "SF Pro Display", sans-serif;
+        background: linear-gradient(145deg, #0f0f12, #1b1b1f);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 40px;
+        color: #fff;
+    }
+
+    .wrapper {
+        width: 430px;
+        padding: 30px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(22px) saturate(180%);
+        -webkit-backdrop-filter: blur(22px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 15px 45px rgba(0,0,0,0.45);
+        animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+        text-align: center;
+        font-weight: 600;
+        margin-bottom: 25px;
+        font-size: 26px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        margin-top: 20px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    input[type=range] {
+        width: 100%;
+        height: 6px;
+        border-radius: 50px;
+        background: rgba(255,255,255,0.25);
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 22px;
+        width: 22px;
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 0 12px rgba(255,255,255,0.7);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+        transform: scale(1.15);
+    }
+
+    .color-preview {
+        width: 100%;
+        height: 55px;
+        border-radius: 16px;
+        border: 2px solid rgba(255,255,255,0.4);
+        margin-top: 10px;
+        transition: 0.3s;
+    }
+
+    .output-box {
+        margin-top: 15px;
+        padding: 15px;
+        border-radius: 14px;
+        font-family: monospace;
+        font-size: 15px;
+        background: rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #7CFF7C;
+        user-select: all;
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 15px;
+        border-radius: 18px;
+        border: none;
+        background: linear-gradient(135deg, #43ff64, #2ccb4a);
+        color: #000;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(0,255,100,0.3);
+        transition: 0.25s;
+    }
+
+    button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0,255,100,0.35);
+    }
+
+    .flex {
+        display: flex;
+        gap: 10px;
+    }
+
+    .preset-card {
+        padding: 12px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .preset-card:hover {
+        background: rgba(255,255,255,0.12);
+    }
+
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h1>GSA RGB Generator</h1>
+
+    <div class="section-title">R G B</div>
+
+    R <span id="rVal">0</span>
+    <input type="range" id="r" min="0" max="1" step="0.01">
+
+    G <span id="gVal">0</span>
+    <input type="range" id="g" min="0" max="1" step="0.01">
+
+    B <span id="bVal">0</span>
+    <input type="range" id="b" min="0" max="1" step="0.01">
+
+    <div class="section-title">Scale</div>
+    <span id="sVal">1</span>
+    <input type="range" id="s" min="0.1" max="5" step="0.1">
+
+    <div class="section-title">Preview</div>
+    <div class="color-preview" id="preview"></div>
+
+    <div class="section-title">Generated Command:</div>
+    <div class="output-box" id="output">/gsa 0 0 0 1</div>
+
+    <button onclick="copyCommand()">Copy Command</button>
+    <button onclick="addPreset()" style="background: linear-gradient(135deg,#60a7ff,#3d7bff);box-shadow:0 8px 25px rgba(80,140,255,0.35)">Add Preset</button>
+
+    <div class="section-title">Workshop</div>
+    <div id="presets"></div>
+</div>
+
+<script>
+function update() {
+    let r = document.getElementById("r").value;
+    let g = document.getElementById("g").value;
+    let b = document.getElementById("b").value;
+    let s = document.getElementById("s").value;
+
+    document.getElementById("rVal").textContent = r;
+    document.getElementById("gVal").textContent = g;
+    document.getElementById("bVal").textContent = b;
+    document.getElementById("sVal").textContent = s;
+
+    document.getElementById("preview").style.background =
+        `rgb(${r*255}, ${g*255}, ${b*255})`;
+
+    document.getElementById("output").textContent =
+        `/gsa ${r} ${g} ${b} ${s}`;
+}
+
+document.querySelectorAll("input").forEach(el => el.addEventListener("input", update));
+update();
+
+function copyCommand() {
+    navigator.clipboard.writeText(document.getElementById("output").textContent);
+}
+
+// ----------- PRESETS + WORKSHOP -----------
+
+function loadPresets() {
+    let presets = JSON.parse(localStorage.getItem("gsa_presets") || "[]");
+    const box = document.getElementById("presets");
+    box.innerHTML = "";
+
+    presets.forEach((p, i) => {
+        let el = document.createElement("div");
+        el.className = "preset-card";
+        el.innerHTML = `
+            <div>
+                <b>${p.name}</b><br>
+                <small>/gsa ${p.r} ${p.g} ${p.b} ${p.s}</small>
+            </div>
+            <div style="width:30px;height:30px;border-radius:8px;background:rgb(${p.r*255},${p.g*255},${p.b*255})"></div>
+        `;
+
+        el.onclick = () => {
+            document.getElementById("r").value = p.r;
+            document.getElementById("g").value = p.g;
+            document.getElementById("b").value = p.b;
+            document.getElementById("s").value = p.s;
+            update();
+        };
+
+        box.appendChild(el);
+    });
+}
+
+function addPreset() {
+    let name = prompt("Preset name:");
+    if (!name) return;
+
+    let presets = JSON.parse(localStorage.getItem("gsa_presets") || "[]");
+
+    presets.push({
+        name,
+        r: document.getElementById("r").value,
+        g: document.getElementById("g").value,
+        b: document.getElementById("b").value,
+        s: document.getElementById("s").value
+    });
+
+    localStorage.setItem("gsa_presets", JSON.stringify(presets));
+    loadPresets();
+}
+
+// ----------- URL PARAMS LOADING -----------
+
+function loadURL() {
+    const url = new URL(window.location.href);
+
+    let r = url.searchParams.get("r");
+    let g = url.searchParams.get("g");
+    let b = url.searchParams.get("b");
+    let s = url.searchParams.get("s");
+
+    if (r) document.getElementById("r").value = r;
+    if (g) document.getElementById("g").value = g;
+    if (b) document.getElementById("b").value = b;
+    if (s) document.getElementById("s").value = s;
+
+    update();
+}
+
+loadURL();
+loadPresets();
+
+</script>
+
+</body>
+</html>
